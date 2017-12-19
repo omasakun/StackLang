@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="description" content="Test and Demonstration of GUI library">
+	<meta name="author" content="omasakun">
+	<title>Test/Demo</title>
+	<script src="index.js"></script>
+	<link rel="stylesheet" href="common/common.css">
+	<style>
+		body,html{
+			height:100%;
+		}
+	textarea{
+		width:100%;
+	}
+	</style>
+</head>
+
+<body>
+	<div class="fullH fullW cV">
+		<div>
+			<button onclick="view()">View</button>
+			<button onclick="reset();run()">Run</button>
+			<button onclick="stop();step()">Step</button>
+			<button onclick="run()">Restart</button>
+			<button onclick="stop()">Stop</button>
+			<button onclick="reset()">Reset</button>
+			<button onclick="help()">ToggleHelp</button>
+			<span id="error" style="color:red"></span>
+		</div>
+		<div class="fullW stack grow">
+			<div class="fullH fullW cV" id="c1">
+				<h1>Editor</h1>
+				<textarea class="grow" value="1 2 3 + * Math.PI 2 / Math.sin 1 &" id="in"></textarea>
+			</div>
+			<div class="fullH fullW cV hide" id="c2">
+				<h1>Output</h1>
+				<textarea class="grow" value="Outputs will be appear" id="out" readonly></textarea>
+			</div>
+			<div id="help" class="fullH fullW hide">
+				<pre class="fullW fullH scrollY">
+					逆ポーランド記法で記述します。
+					一行目以外は無視されます
+					デフォルトで使える関数は、
+					[+]Javascriptと同じ
+					[-]Javascriptと同じ
+					[*]Javascriptと同じ
+					[/]Javascriptと同じ
+					[%]Javascriptと同じ
+					[^]Javascriptの ** と同じ
+					[~]スタックから一つ値を取り出して捨てる
+					[&] var count = stack.pop();
+					    var fn = stack.pop();
+					    var args: Stack = [];
+					    for (let i = 0; i < count; i++)args.unshift(stack.pop());
+					    stack.push(fn(...args));
+					[#]stack.push(stack[stack.length - stack.pop() - 1])
+					コマンドがJSONとしてparseできる場合(例: "Hello, world" や 13)はparseする。
+					それでもダメな場合、Javascript APIを参照する
+				</pre>
+			</div>
+		</div>
+	</div>
+	<script>
+		function view() {
+			document.getElementById("c1").classList.toggle("hide");
+			document.getElementById("c2").classList.toggle("hide");
+		}
+		var In = document.getElementById("in");
+		var Out = document.getElementById("out");
+		var commands = [];
+		var stack = [];
+		var timer = 0;
+		function run() {
+			document.getElementById("c1").classList.add("hide");
+			document.getElementById("c2").classList.remove("hide");
+			commands=In.value.split("\n")[0].split(" ");
+			timer = setInterval(() => {
+				step();
+			}, 500);
+		}
+		function step(){
+
+			if (commands.length <= 0){
+					 stop();
+					 return;
+				}
+				try {
+					StackLang.runOneCommand(commands.shift(), stack,StackLang.defaultLib);
+				} catch (e) {
+					document.getElementById("error").innerText = e;
+					stop();
+				}
+				updateOut();
+		}
+		function stop() {
+			clearInterval(timer);
+			updateOut();
+		}
+		function reset() {
+			stack = [];
+			updateOut();
+		}
+		function updateOut() {
+			Out.value = commands.join(" ") + "\n--- Stack ----\n<toString|JSON>\n" + stack.map(v => "[" + v.toString() + " | " + JSON.stringify(v) + "]").join("\n");
+		}
+		function help(){
+			document.getElementById("help").classList.toggle("hide");			
+		}
+	</script>
+</body>
