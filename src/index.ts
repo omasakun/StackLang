@@ -1,4 +1,4 @@
-// 2017/12/19 18:23 ~ 
+// 2017/12/19 18:23 ~ 19:30
 namespace StackLang {
 	export type Code = string[];
 	export type Item = number | string | any;
